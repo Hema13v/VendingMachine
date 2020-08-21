@@ -22,4 +22,4 @@ mvn clean install
 
 ## 
 
-See src/main/doc/UML for more UML design.
+See src/main/doc/UML for UML design.
