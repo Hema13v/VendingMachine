@@ -1,6 +1,6 @@
 package com.assignment.vendingmachine.data;
 
-public class Money {
+public class CashBox {
 	
 	public void updateBalance() {
 		
