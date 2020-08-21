@@ -103,53 +103,53 @@ public class ProductProcessor {
 
 	private void changeCalculator(Integer totalAmountInCents, Product product, List<Coin> validCoins) {
 		Integer returnAmount = totalAmountInCents - product.getPrice();
-		
+
 		Integer numberOfCentsToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Cent);
 		String cent = CoinEnum.Cent.getName();
 		if (numberOfCentsToReturn != 0 && cashBox.get(cent) >= numberOfCentsToReturn) {
 			System.out.println("Please dont forget to take the change: " + numberOfCentsToReturn + cent);
-			
+
 			validCoins = addChangeToValidCoins(validCoins, numberOfCentsToReturn, cent);
 			lendProduct(product, validCoins);
 			return;
 		}
-		
+
 		Integer numberOfNickleToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Nickle);
 		String nickle = CoinEnum.Nickle.getName();
 		if (numberOfNickleToReturn != 0 && cashBox.get(nickle) >= numberOfNickleToReturn) {
 			System.out.println("Please dont forget to take the change: " + numberOfNickleToReturn + nickle);
-			
+
 			validCoins = addChangeToValidCoins(validCoins, numberOfNickleToReturn, nickle);
 			lendProduct(product, validCoins);
-			
+
 			return;
 		}
-		
+
 		Integer numberOfDimeToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Dime);
 		String dime = CoinEnum.Dime.getName();
 		if (numberOfDimeToReturn != 0 && cashBox.get(dime) >= numberOfDimeToReturn) {
 			System.out.println("Please dont forget to take the change: " + numberOfDimeToReturn + dime);
-			
+
 			validCoins = addChangeToValidCoins(validCoins, numberOfDimeToReturn, dime);
 			lendProduct(product, validCoins);
 			return;
 		}
-		
+
 		Integer numberOfQuarterToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Quarter);
 		String quarter = CoinEnum.Quarter.getName();
 		if (numberOfQuarterToReturn != 0 && cashBox.get(quarter) >= numberOfQuarterToReturn) {
 			System.out.println("Please dont forget to take the change" + numberOfQuarterToReturn + quarter);
-			
+
 			validCoins = addChangeToValidCoins(validCoins, numberOfQuarterToReturn, quarter);
 			lendProduct(product, validCoins);
 			return;
 		}
-		
+
 		Integer numberOfHalfDollarToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.HalfDollar);
 		String halfDollar = CoinEnum.HalfDollar.getName();
 		if (numberOfHalfDollarToReturn != 0 && cashBox.get(halfDollar) >= numberOfQuarterToReturn) {
 			System.out.println("Please dont forget to take the change" + numberOfHalfDollarToReturn + halfDollar);
-			
+
 			validCoins = addChangeToValidCoins(validCoins, numberOfHalfDollarToReturn, halfDollar);
 			lendProduct(product, validCoins);
 			return;
@@ -163,11 +163,11 @@ public class ProductProcessor {
 		System.out.println("Please take back below coin/'s and try again by inserting required coin/'s");
 		coinsInserted.stream().forEach(coin -> System.out.println(coin.getName()));
 	}
-	
-	private static List<Coin> addChangeToValidCoins(List<Coin> validCoins, Integer numberOfCoins, String coinName){
-		for(int i=0; i<numberOfCoins; i++) {
-			
-			validCoins.add(new Coin(coinName, CoinStatus.VALID) );
+
+	private static List<Coin> addChangeToValidCoins(List<Coin> validCoins, Integer numberOfCoins, String coinName) {
+		for (int i = 0; i < numberOfCoins; i++) {
+
+			validCoins.add(new Coin(coinName, CoinStatus.VALID));
 		}
 		return validCoins;
 	}

@@ -17,8 +17,7 @@ public class CashBoxHandler {
 		return cashBox;
 	}
 
-	public static HashMap<String, Integer> updateCashBox(HashMap<String, Integer> cashBox,
-			List<Coin> coinsToBeAdded) {
+	public static HashMap<String, Integer> updateCashBox(HashMap<String, Integer> cashBox, List<Coin> coinsToBeAdded) {
 		for (Coin coin : coinsToBeAdded) {
 			if (cashBox.containsKey(coin.getName())) {
 				String key = coin.getName();
@@ -27,9 +26,9 @@ public class CashBoxHandler {
 		}
 		return cashBox;
 	}
-	
+
 	public static Integer numberOfCoins(Integer returnAmount, CoinEnum coin) {
-		return returnAmount/coin.getCents();
+		return returnAmount / coin.getCents();
 	}
 
 }

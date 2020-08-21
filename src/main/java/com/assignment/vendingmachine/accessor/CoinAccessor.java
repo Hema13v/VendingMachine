@@ -13,8 +13,8 @@ public class CoinAccessor {
 
 	public static ArrayList<Coin> mapCoins(String[] coinsArray) {
 		ArrayList<Coin> coins = new ArrayList<Coin>();
-		for(String coin: coinsArray) {
-			if(isValidCoin(coin)) {
+		for (String coin : coinsArray) {
+			if (isValidCoin(coin)) {
 				coins.add(new Coin(coin, CoinStatus.VALID));
 			} else {
 				coins.add(new Coin(coin, CoinStatus.INVALID));
@@ -22,39 +22,38 @@ public class CoinAccessor {
 		}
 		return coins;
 	}
-	
+
 	public static List<Coin> validCoins(List<Coin> coins) {
 		return coins.stream().filter(coin -> CoinStatus.VALID.equals(coin.getStatus())).collect(Collectors.toList());
 	}
-	
+
 	public static List<Coin> invalidCoins(List<Coin> coins) {
 		return coins.stream().filter(coin -> CoinStatus.INVALID.equals(coin.getStatus())).collect(Collectors.toList());
 	}
-	
+
 	public static Integer totalAmountInCents(List<Coin> validCoins) {
-		return validCoins.stream()
-				.map(coin -> getCoinsValueinCents(coin.getName()))
-				.reduce(0, (first, second) -> first + second);
+		return validCoins.stream().map(coin -> getCoinsValueinCents(coin.getName())).reduce(0,
+				(first, second) -> first + second);
 	}
-	
+
 	private static boolean isValidCoin(String value) {
 		return Stream.of(CoinEnum.values()).anyMatch(coin -> coin.getName().equals(value));
 	}
-	
+
 	private static Integer getCoinsValueinCents(String value) {
-		switch(value) {
-			case "Cent":
-				return CoinEnum.Cent.getCents();
-			case "Nickle":
-				return CoinEnum.Nickle.getCents();
-			case "Dime":
-				return CoinEnum.Dime.getCents();
-			case "Quarter":
-				return CoinEnum.Quarter.getCents();
-			case "HalfDollar":
-				return CoinEnum.HalfDollar.getCents();
-			default:
-				return 0;
+		switch (value) {
+		case "Cent":
+			return CoinEnum.Cent.getCents();
+		case "Nickle":
+			return CoinEnum.Nickle.getCents();
+		case "Dime":
+			return CoinEnum.Dime.getCents();
+		case "Quarter":
+			return CoinEnum.Quarter.getCents();
+		case "HalfDollar":
+			return CoinEnum.HalfDollar.getCents();
+		default:
+			return 0;
 		}
 	}
 }
