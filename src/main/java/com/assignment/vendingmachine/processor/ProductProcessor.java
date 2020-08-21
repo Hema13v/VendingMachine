@@ -27,12 +27,20 @@ public class ProductProcessor {
 	public void initalLoad() {
 		products = StockHandler.loadStock(products);
 		cashBox = CashBoxHandler.loadCoins(cashBox);
+		displayProducts(products);
+	}
+
+	public void displayProducts(ArrayList<Product> products) {
+		System.out.println("Welcome to vending machine");
+		System.out.println("--------------------------------");
+		System.out.println("Products available are as below");
+		System.out.println("--------------------------------");
+		products.stream().forEach(
+				product -> System.out.println("Product Name: " + product.getName() + ", Price: " + product.getPrice()));
+		System.out.println("--------------------------------");
 	}
 
 	public void processRequest() {
-
-		System.out.println("Welcome to vending machine");
-
 		System.out.println("Please enter your favorite product");
 
 		Scanner sc = new Scanner(System.in);
