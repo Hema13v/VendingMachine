@@ -1,4 +1,4 @@
-package com.assignment.vendingmachine;
+package com.assignment.vendingmachine.accessor;
 
 import static org.junit.Assert.assertTrue;
 

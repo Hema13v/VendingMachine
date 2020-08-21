@@ -24,11 +24,11 @@ public class CoinAccessor {
 	}
 	
 	public static List<Coin> validCoins(List<Coin> coins) {
-		return coins.stream().filter(coin -> coin.getStatus() == CoinStatus.VALID).collect(Collectors.toList());
+		return coins.stream().filter(coin -> CoinStatus.VALID.equals(coin.getStatus())).collect(Collectors.toList());
 	}
 	
 	public static List<Coin> invalidCoins(List<Coin> coins) {
-		return coins.stream().filter(coin -> coin.getStatus() == CoinStatus.INVALID).collect(Collectors.toList());
+		return coins.stream().filter(coin -> CoinStatus.INVALID.equals(coin.getStatus())).collect(Collectors.toList());
 	}
 	
 	public static Integer totalAmountInCents(List<Coin> validCoins) {
