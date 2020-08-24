@@ -11,6 +11,7 @@ import com.assignment.vendingmachine.common.CoinStatus;
 import com.assignment.vendingmachine.datahandler.CashBoxHandler;
 import com.assignment.vendingmachine.datahandler.StockHandler;
 import com.assignment.vendingmachine.expection.InsufficientFundException;
+import com.assignment.vendingmachine.expection.InvalidCoinException;
 import com.assignment.vendingmachine.expection.OutOfStockExpection;
 import com.assignment.vendingmachine.model.Coin;
 import com.assignment.vendingmachine.model.Product;
@@ -19,6 +20,8 @@ public class ProductProcessor {
 
 	ArrayList<Product> products = new ArrayList<Product>();
 	HashMap<String, Integer> cashBox = new HashMap<String, Integer>();
+	String successMessage;
+	String changeMessage;
 
 	public static void main(String[] args) {
 		ProductProcessor productProcessor = new ProductProcessor();
@@ -52,65 +55,65 @@ public class ProductProcessor {
 			sc.close();
 			return;
 		}
+
+		System.out.println("Please enter coins separated by space");
+		String coins = sc.nextLine();
+		sc.close();
+
 		try {
-			for (Product product : products) {
-				if (product.getName().equals(productName) && product.getQuantity() > 0) {
-					product.setQuantity(product.getQuantity() - 1);
-
-					System.out.println("Please enter coins separated by space");
-					String coins = sc.nextLine();
-					sc.close();
-
-					buyProduct(product, coins);
-					return;
-				}
-			}
-			sc.close();
-			String message = "Requested product: " + productName + " is not available in stock";
-			throw new OutOfStockExpection(message);
-		} catch (OutOfStockExpection e) {
+			buyProduct(productName, coins);
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 
 	}
 
-	public void buyProduct(Product product, String coins) {
+	public void buyProduct(String productName, String coins)
+			throws OutOfStockExpection, InvalidCoinException, InsufficientFundException {
+		for (Product product : products) {
+			if (product.getName().equals(productName) && product.getQuantity() > 0) {
+				if (coins.isEmpty()) {
+					String insufficentFundMessage = "Insufficent amount, You did not insert coins, Please insert coins";
+					throw new InsufficientFundException(insufficentFundMessage);
+				}
 
-		if (coins.isEmpty()) {
-			System.out.println("You did not insert coins, Please insert coins to buy product");
-			return;
-		}
+				String[] coinsArray = coins.split(" ");
+				ArrayList<Coin> coinList = CoinAccessor.mapCoins(coinsArray);
 
-		String[] coinsArray = coins.split(" ");
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coinsArray);
+				List<Coin> invalidCoins = CoinAccessor.invalidCoins(coinList);
+				if (invalidCoins.size() > 0) {
+					String invalidCoinMessage = "You have inserted invalid coins, please insert valid coins";
+					throw new InvalidCoinException(invalidCoinMessage);
+				}
 
-		List<Coin> invalidCoins = CoinAccessor.invalidCoins(coinList);
-		if (invalidCoins.size() > 0) {
-			System.out.println("Below coin/'s are rejected, as they are invalid:");
-			invalidCoins.stream().forEach(coin -> System.out.println(coin.getName()));
-		}
-
-		List<Coin> validCoins = CoinAccessor.validCoins(coinList);
-		if (validCoins.size() > 0) {
-			Integer totalAmountInCents = CoinAccessor.totalAmountInCents(validCoins);
-			if (totalAmountInCents == product.getPrice()) {
-				lendProduct(product, validCoins);
-			} else if (totalAmountInCents > product.getPrice()) {
-				changeCalculator(totalAmountInCents, product, validCoins);
-			} else {
-				System.out.println("Insufficient amount, You have not insterted required coins");
-				returnInsertedCoins(validCoins);
+				List<Coin> validCoins = CoinAccessor.validCoins(coinList);
+				if (validCoins.size() > 0) {
+					Integer totalAmountInCents = CoinAccessor.totalAmountInCents(validCoins);
+					if (totalAmountInCents == product.getPrice()) {
+						lendProduct(product, validCoins);
+					} else if (totalAmountInCents > product.getPrice()) {
+						changeCalculator(totalAmountInCents, product, validCoins);
+					} else {
+						returnInsertedCoins(validCoins);
+						String insufficientAmountMessage = "Insufficient amount, You have not insterted required coins";
+						throw new InsufficientFundException(insufficientAmountMessage);
+					}
+				} else {
+					String insufficientAmountMessage = "Insufficient amount, You have not insterted required coins";
+					throw new InsufficientFundException(insufficientAmountMessage);
+				}
+				return;
 			}
-		} else {
-			System.out.println("Insufficient amount, Please insert valid coin/'s to buy product");
 		}
-
+		String outOfStockMessage = "Requested product: " + productName + " is not available in stock";
+		throw new OutOfStockExpection(outOfStockMessage);
 	}
 
 	private void lendProduct(Product product, List<Coin> validCoins) {
 		product.setQuantity(product.getQuantity() - 1);
 		cashBox = CashBoxHandler.updateCashBox(cashBox, validCoins);
-		System.out.println("Please take your product: " + product.getName());
+		successMessage = "Please take your product: " + product.getName();
+		System.out.println(successMessage);
 		System.out.println("Thank You!");
 	}
 
@@ -120,7 +123,8 @@ public class ProductProcessor {
 		Integer numberOfCentsToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Cent);
 		String cent = CoinEnum.Cent.getName();
 		if (numberOfCentsToReturn != 0 && cashBox.get(cent) >= numberOfCentsToReturn) {
-			System.out.println("Please dont forget to take the change: " + numberOfCentsToReturn + cent);
+			changeMessage = "Please dont forget to take the change: " + numberOfCentsToReturn + cent;
+			System.out.println(changeMessage);
 
 			validCoins = addChangeToValidCoins(validCoins, numberOfCentsToReturn, cent);
 			lendProduct(product, validCoins);
@@ -130,7 +134,8 @@ public class ProductProcessor {
 		Integer numberOfNickleToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Nickle);
 		String nickle = CoinEnum.Nickle.getName();
 		if (numberOfNickleToReturn != 0 && cashBox.get(nickle) >= numberOfNickleToReturn) {
-			System.out.println("Please dont forget to take the change: " + numberOfNickleToReturn + nickle);
+			changeMessage = "Please dont forget to take the change: " + numberOfNickleToReturn + nickle;
+			System.out.println(changeMessage);
 
 			validCoins = addChangeToValidCoins(validCoins, numberOfNickleToReturn, nickle);
 			lendProduct(product, validCoins);
@@ -141,7 +146,8 @@ public class ProductProcessor {
 		Integer numberOfDimeToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Dime);
 		String dime = CoinEnum.Dime.getName();
 		if (numberOfDimeToReturn != 0 && cashBox.get(dime) >= numberOfDimeToReturn) {
-			System.out.println("Please dont forget to take the change: " + numberOfDimeToReturn + dime);
+			changeMessage = "Please dont forget to take the change: " + numberOfDimeToReturn + dime;
+			System.out.println(changeMessage);
 
 			validCoins = addChangeToValidCoins(validCoins, numberOfDimeToReturn, dime);
 			lendProduct(product, validCoins);
@@ -151,6 +157,7 @@ public class ProductProcessor {
 		Integer numberOfQuarterToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Quarter);
 		String quarter = CoinEnum.Quarter.getName();
 		if (numberOfQuarterToReturn != 0 && cashBox.get(quarter) >= numberOfQuarterToReturn) {
+			changeMessage = "Please dont forget to take the change" + numberOfQuarterToReturn + quarter;
 			System.out.println("Please dont forget to take the change" + numberOfQuarterToReturn + quarter);
 
 			validCoins = addChangeToValidCoins(validCoins, numberOfQuarterToReturn, quarter);
@@ -161,13 +168,15 @@ public class ProductProcessor {
 		Integer numberOfHalfDollarToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.HalfDollar);
 		String halfDollar = CoinEnum.HalfDollar.getName();
 		if (numberOfHalfDollarToReturn != 0 && cashBox.get(halfDollar) >= numberOfQuarterToReturn) {
-			System.out.println("Please dont forget to take the change" + numberOfHalfDollarToReturn + halfDollar);
+			changeMessage = "Please dont forget to take the change" + numberOfHalfDollarToReturn + halfDollar;
+			System.out.println(changeMessage);
 
 			validCoins = addChangeToValidCoins(validCoins, numberOfHalfDollarToReturn, halfDollar);
 			lendProduct(product, validCoins);
 			return;
 		} else {
-			System.out.println("Sorry, We dont have exact change");
+			changeMessage = "Sorry, We dont have exact change";
+			System.out.println(changeMessage);
 			returnInsertedCoins(validCoins);
 		}
 	}

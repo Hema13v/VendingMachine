@@ -2,80 +2,120 @@ package com.assignment.vendingmachine.processor;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Optional;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import com.assignment.vendingmachine.accessor.CoinAccessor;
-import com.assignment.vendingmachine.common.CoinEnum;
-import com.assignment.vendingmachine.datahandler.CashBoxHandler;
-import com.assignment.vendingmachine.model.Coin;
+import com.assignment.vendingmachine.expection.InsufficientFundException;
+import com.assignment.vendingmachine.expection.InvalidCoinException;
+import com.assignment.vendingmachine.expection.OutOfStockExpection;
+import com.assignment.vendingmachine.model.Product;
 
 public class ProductProcessorTest {
 
-	@Test
-	public void shouldHaveValidCoins() {
-		String[] coins = new String[] { "Nickle", "Cent" };
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coins);
-		List<Coin> validCoins = CoinAccessor.validCoins(coinList);
-		assertEquals(coinList.size(), 2);
-		assertEquals(validCoins.size(), 2);
+	private ProductProcessor productProcessor;
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
+	@Before
+	public void setup() {
+		productProcessor = new ProductProcessor();
 	}
 
 	@Test
-	public void shouldHaveInvalidCoins() {
-		String[] coins = new String[] { "Paisa", "Cen" };
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coins);
-		List<Coin> invalidCoins = CoinAccessor.invalidCoins(coinList);
-		assertEquals(coinList.size(), 2);
-		assertEquals(invalidCoins.size(), 2);
+	public void shouldThrowOutOfStockExpection_if_product_not_in_stock()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "Limca";
+		String coins = "Nickle Cent";
+		String expectedMessage = "Requested product: Limca is not available in stock";
+		exception.expect(OutOfStockExpection.class);
+		exception.expectMessage(expectedMessage);
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
 	}
 
 	@Test
-	public void shouldCalculateTotalAmountsInCentProperly() {
-		String[] coins = new String[] { "Nickle", "Cent" };
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coins);
-		List<Coin> validCoins = CoinAccessor.validCoins(coinList);
-		Integer totalAmount = CoinAccessor.totalAmountInCents(validCoins);
-		assertEquals(totalAmount, Integer.valueOf(6));
+	public void shouldThrowInvalidCoinException_if_inserted_coin_invalid()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "Pepsi";
+		String coins = "Paisa";
+		String expectedMessage = "You have inserted invalid coins, please insert valid coins";
+		exception.expect(InvalidCoinException.class);
+		exception.expectMessage(expectedMessage);
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
 	}
 
 	@Test
-	public void shouldCalculateTotalAmountsInCentProperly_with_multiple_coins_of_same_type() {
-		String[] coins = new String[] { "Nickle", "Nickle", "Dime", "Dime", "HalfDollar" };
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coins);
-		List<Coin> validCoins = CoinAccessor.validCoins(coinList);
-		Integer totalAmount = CoinAccessor.totalAmountInCents(validCoins);
-		assertEquals(totalAmount, Integer.valueOf(80));
+	public void shouldThrowInsufficentFundsExpection_if_no_coin_inserted()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "Pepsi";
+		String coins = "";
+		String expectedMessage = "Insufficent amount, You did not insert coins, Please insert coins";
+		exception.expect(InsufficientFundException.class);
+		exception.expectMessage(expectedMessage);
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
 	}
 
 	@Test
-	public void shouldUpdateCashBoxProperly() {
-		HashMap<String, Integer> cashBox = new HashMap<String, Integer>();
-		cashBox = CashBoxHandler.loadCoins(cashBox);
-		String[] coins = new String[] { "Nickle", "Cent" };
-		ArrayList<Coin> coinList = CoinAccessor.mapCoins(coins);
-		List<Coin> validCoins = CoinAccessor.validCoins(coinList);
-		HashMap<String, Integer> updatedCashBox = CashBoxHandler.updateCashBox(cashBox, validCoins);
-		assertEquals(updatedCashBox.get("Nickle"), Integer.valueOf(21));
-		assertEquals(updatedCashBox.get("Cent"), Integer.valueOf(11));
+	public void shouldThrowInsufficentFundsExpection_if_coins_inserted_amount_less_than_product_price()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "Pepsi";
+		String coins = "Nickle";
+		String expectedMessage = "Insufficient amount, You have not insterted required coins";
+		exception.expect(InsufficientFundException.class);
+		exception.expectMessage(expectedMessage);
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
 	}
-	
+
 	@Test
-	public void shouldCalculateNumberOfCoinsProperly() {
-		Integer returnAmount = 30;
-		Integer numberOfCentsToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Cent);
-		Integer numberOfNickleToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Nickle);
-		Integer numberOfDimeToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Dime);
-		Integer numberOfQuarterToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.Quarter);
-		Integer numberOfHalfDollarToReturn = CashBoxHandler.numberOfCoins(returnAmount, CoinEnum.HalfDollar);
-		assertEquals(numberOfCentsToReturn, Integer.valueOf(30));
-		assertEquals(numberOfNickleToReturn, Integer.valueOf(6));
-		assertEquals(numberOfDimeToReturn, Integer.valueOf(3));
-		assertEquals(numberOfQuarterToReturn, Integer.valueOf(1));
-		assertEquals(numberOfHalfDollarToReturn, Integer.valueOf(0));
+	public void shouldShowSucessMessage_if_coins_inserted_amount_equal_to_product_price()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "DairyMilk";
+		String coins = "Dime Dime Nickle";
+		String successMessage = "Please take your product: DairyMilk";
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
+		assertEquals(productProcessor.successMessage, successMessage);
+	}
+
+	@Test
+	public void shouldShowChangeMessage_if_coins_inserted_amount_greater_than_product_price()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "DairyMilk";
+		String coins = "Dime Dime Nickle Dime Dime";
+		String successMessage = "Please take your product: DairyMilk";
+		String changeMessage = "Please dont forget to take the change: 4Nickle";
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
+		assertEquals(productProcessor.successMessage, successMessage);
+		assertEquals(productProcessor.changeMessage, changeMessage);
+	}
+
+	@Test
+	public void shouldUpdate_CashBox_and_Stock_if_successful()
+			throws OutOfStockExpection, InsufficientFundException, InvalidCoinException {
+		String productName = "DairyMilk";
+		String coins = "Dime Dime Nickle";
+		String successMessage = "Please take your product: DairyMilk";
+		productProcessor.initalLoad();
+		productProcessor.buyProduct(productName, coins);
+
+		// check quantity is decreased from stock
+		Optional<Product> dairlyMilkProduct = productProcessor.products.stream()
+				.filter(product -> product.getName().equals(productName)).findFirst();
+		assertEquals(dairlyMilkProduct.get().getQuantity(), Integer.valueOf(19));
+		// check cash box is updated
+		assertEquals(productProcessor.cashBox.get("Dime"), Integer.valueOf(22));
+		assertEquals(productProcessor.cashBox.get("Nickle"), Integer.valueOf(21));
+		// check success message
+		assertEquals(productProcessor.successMessage, successMessage);
 	}
 
 }
