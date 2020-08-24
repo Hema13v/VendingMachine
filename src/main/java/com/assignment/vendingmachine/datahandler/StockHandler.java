@@ -10,7 +10,7 @@ public class StockHandler {
 		products.add(new Product("Coke", 100, 10));
 		products.add(new Product("Pepsi", 100, 10));
 		products.add(new Product("Mazaa", 50, 10));
-		products.add(new Product("Limca", 100, 10));
+		products.add(new Product("Limca", 100, 0));
 		products.add(new Product("DairyMilk", 25, 20));
 		products.add(new Product("KitKat", 25, 20));
 		products.add(new Product("FiveStar", 20, 20));

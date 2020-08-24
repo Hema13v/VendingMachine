@@ -10,6 +10,8 @@ import com.assignment.vendingmachine.common.CoinEnum;
 import com.assignment.vendingmachine.common.CoinStatus;
 import com.assignment.vendingmachine.datahandler.CashBoxHandler;
 import com.assignment.vendingmachine.datahandler.StockHandler;
+import com.assignment.vendingmachine.expection.InsufficientFundException;
+import com.assignment.vendingmachine.expection.OutOfStockExpection;
 import com.assignment.vendingmachine.model.Coin;
 import com.assignment.vendingmachine.model.Product;
 
@@ -42,7 +44,6 @@ public class ProductProcessor {
 
 	public void processRequest() {
 		System.out.println("Please enter your favorite product");
-
 		Scanner sc = new Scanner(System.in);
 		String productName = sc.nextLine();
 
@@ -51,21 +52,25 @@ public class ProductProcessor {
 			sc.close();
 			return;
 		}
+		try {
+			for (Product product : products) {
+				if (product.getName().equals(productName) && product.getQuantity() > 0) {
+					product.setQuantity(product.getQuantity() - 1);
 
-		for (Product product : products) {
-			if (product.getName().equals(productName) && product.getQuantity() > 0) {
-				product.setQuantity(product.getQuantity() - 1);
+					System.out.println("Please enter coins separated by space");
+					String coins = sc.nextLine();
+					sc.close();
 
-				System.out.println("Please enter coins separated by space");
-				String coins = sc.nextLine();
-				sc.close();
-
-				buyProduct(product, coins);
-				return;
+					buyProduct(product, coins);
+					return;
+				}
 			}
+			sc.close();
+			String message = "Requested product: " + productName + " is not available in stock";
+			throw new OutOfStockExpection(message);
+		} catch (OutOfStockExpection e) {
+			System.out.println(e.getMessage());
 		}
-		sc.close();
-		System.out.println("Requested product: " + productName + " is not available in stock");
 
 	}
 
